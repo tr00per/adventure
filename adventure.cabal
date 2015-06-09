@@ -1,0 +1,12 @@
+Name: Adventure
+Version: 0.1
+License: BSD3
+Copyright: Artur Czajka
+Cabal-Version: >= 1.2
+Build-Type: Simple
+
+Executable adventure
+    Main-Is: Main.hs
+    HS-Source-Dirs: src
+    Build-Depends: base
+    Extensions: ViewPatterns
