@@ -4,12 +4,13 @@ import Creatures
 import Items
 
 import Data.Char (toLower)
+import Control.Monad (unless)
 
-data GameResult = Defeat | Victory deriving (Show)
+data GameResult = Defeat | Victory deriving (Show, Eq)
 
 data Directions = North | East | South | West
 
-data Decision = Unknown | Go String | Attack String | Get String
+data Decision = Unknown | Go Room | Attack Creature | Get Item
 
 data Room = Room {
             getNarrative :: String,
@@ -23,31 +24,71 @@ type Dungeon = [Room]
 explore :: Player -> Room -> IO GameResult
 explore player room = do
     putStrLn $ showRoom room
-    putStrLn $ showOptions room
-    command <- getLine
-    let decision = parseDecision command
-    decide player room decision
+    if null (getExits room)
+        then return Victory
+        else do
+            printOptions room
+            command <- getLine
+            let decision = parseDecision command room
+            decide player room decision
 
-parseDecision :: String -> Decision
-parseDecision "" = Unknown
-parseDecision cmd
-    | command == "go"     = Go target
-    | command == "attack" = Attack target
-    | command == "get"    = Get target
+parseDecision :: String -> Room -> Decision
+parseDecision "" _                       = Unknown
+parseDecision cmd room@(Room _ ms is es)
+    | command == "go"     = tryGo target es
+    | command == "attack" = tryAttack target ms
+    | command == "get"    = tryGet target is
     | otherwise           = Unknown
     where tokens  = (words . map toLower) cmd
           command = head tokens
           target  = unwords (tail tokens)
 
+tryGo :: String -> [Room] -> Decision
+tryGo target es = tryGo' $ lookup target [(show idx, e) | (idx, e) <- zip [1..] es]
+    where tryGo' Nothing  = Unknown
+          tryGo' (Just e) = Go e
+
+tryAttack :: String -> [Creature] -> Decision
+tryAttack target ms = tryAttack' $ lookup target [(Creatures.getName m, m) | m <- ms]
+    where tryAttack' Nothing  = Unknown
+          tryAttack' (Just m) = Attack m
+
+tryGet :: String -> [Item] -> Decision
+tryGet target is = tryGet' $ lookup target [(Items.getName i, i) | i <- is]
+    where tryGet' Nothing  = Unknown
+          tryGet' (Just i) = Get i
+
 decide :: Player -> Room -> Decision -> IO GameResult
 decide player room@(Room n ms is es) decision = case decision of
-                                                Unknown -> explore player room
+                                    Unknown         -> explore player room
+                                    (Go target)     -> explore player target
+                                    (Attack target) -> do
+                                        let (newPlayer, battleResult) = battle player target
+                                            ms'       = filter (/= target) ms
+                                            newRoom   = Room n ms' is es
+                                        if battleResult == PlayerWon
+                                            then explore newPlayer newRoom
+                                            else return Defeat
+                                    (Get target)    -> do
+                                        let newPlayer = upgradePlayer player target
+                                            is'       = filter (/= target) is
+                                            newRoom   = Room n ms is' es
+                                        explore newPlayer newRoom
+
+upgradePlayer :: Player -> Item -> Player
+upgradePlayer p (Item _ (Weapon x)) = upgradePower p x
+upgradePlayer p (Item _ (Armor x))  = upgradeArmor p x
+upgradePlayer p (Item _ (Potion x)) = upgradeHealth p x
 
 showRoom :: Room -> String
-showRoom (Room n ms is es) = unlines ["You enter a room.", n, showEncounter ms, showTreasure is, showExits es]
+showRoom (Room n ms is es) = unlines ["\n\nYou enter a room.", n, showEncounter ms, showTreasure is, showExits es]
 
-showOptions :: Room -> String
-showOptions (Room n ms is es) = "[Press Enter]"
+printOptions :: Room -> IO ()
+printOptions (Room n ms is es) = do
+    putStrLn "Available actions:"
+    unless (null ms) (putStrLn "attack")
+    unless (null is) (putStrLn "get")
+    unless (null es) (putStrLn "go")
 
 showEncounter :: [Creature] -> String
 showEncounter ms = if null ms

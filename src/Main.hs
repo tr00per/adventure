@@ -9,11 +9,7 @@ main = do
     name <- prompt "What is your name?"
     putStrLn $ "Welcome, " ++ name ++ " the Adventurer!"
     let player = newPlayer name
-    putStrLn $ "Created: " ++ show player
-    let monster = goblin
-        whoWon = battle player monster
-    putStrLn $ getName player ++ " vs. " ++ getName monster ++ ": " ++ show whoWon
-    let dungeon = createDemoDungeon
+        dungeon = createDemoDungeon
     result <- runDungeon player dungeon
     gameover (show result)
 
