@@ -2,22 +2,15 @@ module Dungeon where
 
 import Creatures
 import Items
+import Rooms
+import Common
 
 import Data.Char (toLower)
 import Control.Monad (unless)
 
 data GameResult = Defeat | Victory deriving (Show, Eq)
 
-data Directions = North | East | South | West
-
-data Decision = Unknown | Go Room | Attack Creature | Get Item
-
-data Room = Room {
-            getNarrative :: String,
-            getMonsters  :: [Creature],
-            getItems     :: [Item],
-            getExits     :: [Room]
-} deriving (Show)
+data Decision = Unknown | Go RoomExit | Attack Creature | Get Item
 
 type Dungeon = [Room]
 
@@ -35,33 +28,23 @@ explore player room = do
 parseDecision :: String -> Room -> Decision
 parseDecision "" _                       = Unknown
 parseDecision cmd room@(Room _ ms is es)
-    | command == "go"     = tryGo target es
-    | command == "attack" = tryAttack target ms
-    | command == "get"    = tryGet target is
+    | command == "go"     = tryAction Go target es
+    | command == "attack" = tryAction Attack target ms
+    | command == "get"    = tryAction Get target is
     | otherwise           = Unknown
     where tokens  = (words . map toLower) cmd
           command = head tokens
           target  = unwords (tail tokens)
 
-tryGo :: String -> [Room] -> Decision
-tryGo target es = tryGo' $ lookup target [(show idx, e) | (idx, e) <- zip [1..] es]
-    where tryGo' Nothing  = Unknown
-          tryGo' (Just e) = Go e
-
-tryAttack :: String -> [Creature] -> Decision
-tryAttack target ms = tryAttack' $ lookup target [(Creatures.getName m, m) | m <- ms]
-    where tryAttack' Nothing  = Unknown
-          tryAttack' (Just m) = Attack m
-
-tryGet :: String -> [Item] -> Decision
-tryGet target is = tryGet' $ lookup target [(Items.getName i, i) | i <- is]
-    where tryGet' Nothing  = Unknown
-          tryGet' (Just i) = Get i
+tryAction :: NamedObject a => (a -> Decision) -> String -> [a] -> Decision
+tryAction f target xs = tryAction' $ lookup target [(getName x, x) | x <- xs]
+    where   tryAction' Nothing       = Unknown
+            tryAction' (Just needle) = f needle
 
 decide :: Player -> Room -> Decision -> IO GameResult
 decide player room@(Room n ms is es) decision = case decision of
                                     Unknown         -> explore player room
-                                    (Go target)     -> explore player target
+                                    (Go target)     -> explore player (follow target)
                                     (Attack target) -> do
                                         let (newPlayer, battleResult) = battle player target
                                             ms'       = filter (/= target) ms
@@ -104,23 +87,23 @@ showExits es = if null es
                   then "It's the end of your journey."
                   else "You see " ++ (show $ length es) ++ " exit(s)."
 
-mkNarrativeChamber :: String -> [Room] -> Room
+mkNarrativeChamber :: String -> [RoomExit] -> Room
 mkNarrativeChamber plot exits = Room plot [] [] exits
 
-mkEmptyRoom :: [Room] -> Room
+mkEmptyRoom :: [RoomExit] -> Room
 mkEmptyRoom exits = mkNarrativeChamber "This is just an empty room" exits
 
-mkEncounter :: [Creature] -> [Room] -> Room
+mkEncounter :: [Creature] -> [RoomExit] -> Room
 mkEncounter monsters exits = Room "This chamber is infested with monsters" monsters [] exits
 
-mkTreasure :: [Item] -> [Room] -> Room
+mkTreasure :: [Item] -> [RoomExit] -> Room
 mkTreasure items exits = Room "There's a lot of chests and other containers in this chamber" [] items exits
 
 createDemoDungeon :: Dungeon
 createDemoDungeon = [room1, room2a, room2b, room3, room4, room5] where
-    room1  = mkNarrativeChamber "This is the crypt of the Demo Demon. You hope to find great treasures within it." [room2a]
-    room2a = mkEncounter [goblin, goblin] [room3, room4]
-    room2b = mkEmptyRoom [room3, room4]
-    room3  = mkTreasure [sword] [room2b]
-    room4  = mkEmptyRoom [room2b, room5]
+    room1  = mkNarrativeChamber "This is the crypt of the Demo Demon. You hope to find great treasures within it." [East room2a]
+    room2a = mkEncounter [goblin, goblin] [North room3, South room4]
+    room2b = mkEmptyRoom [North room3, South room4]
+    room3  = mkTreasure [sword] [South room2b]
+    room4  = mkEmptyRoom [North room2b, East room5]
     room5  = mkNarrativeChamber "You found the tomb of the Demo Demon, but it's empty. You go back to your home village and to your daily life." []

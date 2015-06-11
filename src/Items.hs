@@ -1,11 +1,8 @@
 module Items where
 
-type Name = String
+import Common
 
-data Item = Item {
-    getName :: String,
-    getType :: ItemType
-} deriving (Show, Eq)
+data Item = Item Name ItemType deriving (Show, Eq)
 
 data ItemType = Weapon Int |
                 Armor Int |
@@ -14,3 +11,6 @@ data ItemType = Weapon Int |
 
 sword :: Item
 sword = Item "Common Sword" (Weapon 2)
+
+instance NamedObject Item where
+    getName (Item name _) = name

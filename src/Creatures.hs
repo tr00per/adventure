@@ -1,15 +1,20 @@
 module Creatures where
 
+import Common
+
 data BattleResult = CreatureWon | Draw | PlayerWon deriving (Show, Eq)
 
-data Creature = Creature {
-                getName   :: String,
-                getPower  :: Int,
-                getArmor  :: Int,
-                getHealth :: Int
-} deriving (Show, Eq)
+data Creature = Creature Name Int Int Int deriving (Show, Eq)
 
 type Player = Creature
+
+instance NamedObject Creature where
+    getName (Creature name _ _ _) = name
+
+getPower, getArmor, getHealth :: Creature -> Int
+getPower (Creature _ power _ _)   = power
+getArmor (Creature _ _ armor _)   = armor
+getHealth (Creature _ _ _ health) = health
 
 newPlayer :: String -> Player
 newPlayer name = Creature name 1 0 10
