@@ -4,14 +4,16 @@ import Dungeon
 import Creatures
 import Presentation
 
+main :: IO ()
 main = do
-    putStrLn "Adventure"
-    name <- prompt "What is your name?"
+    banner "Adventure"
+    name <- prompt "How do they call you, friend?" "Enter your name"
     putStrLn $ "Welcome, " ++ name ++ " the Adventurer!"
-    let player = newPlayer name
+    let player = mkPlayer name
         dungeon = createDemoDungeon
     result <- runDungeon player dungeon
     gameover (show result)
 
 runDungeon :: Player -> Dungeon -> IO GameResult
 runDungeon player (room:_) = explore player room
+runDungeon _      []       = return Defeat

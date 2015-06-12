@@ -4,14 +4,14 @@ import Creatures (Creature)
 import Items (Item)
 import Common
 
-data RoomExit = North Room | East Room | South Room | West Room
-
 data Room = Room {
             getNarrative :: String,
             getMonsters  :: [Creature],
             getItems     :: [Item],
             getExits     :: [RoomExit]
 } deriving (Show)
+
+data RoomExit = North Room | East Room | South Room | West Room
 
 instance Show RoomExit where
     show (North _) = "North"
@@ -20,10 +20,10 @@ instance Show RoomExit where
     show (West _)  = "West"
 
 instance NamedObject RoomExit where
-    getName r = show r
+    getName = show
 
 follow :: RoomExit -> Room
 follow (North r) = r
 follow (East r)  = r
 follow (South r) = r
-follor (West r)  = r
+follow (West r)  = r

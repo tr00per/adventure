@@ -2,10 +2,17 @@ module Presentation where
 
 import System.IO (hFlush, stdout)
 
-prompt :: String -> IO String
-prompt msg = do
+banner :: String -> IO ()
+banner msg = do
+    putStrLn $ replicate len '-'
+    putStrLn $ " " ++ msg
+    putStrLn $ replicate len '-'
+    where len = length msg + 2
+
+prompt :: String -> String -> IO String
+prompt msg status = do
     putStrLn msg
-    putStr ">"
+    putStr $ "(" ++ status ++ ") > "
     hFlush stdout
     getLine
 

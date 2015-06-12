@@ -4,15 +4,16 @@ import Creatures
 import Items
 import Rooms
 import Common
+import Presentation
 
-import Data.Char (toLower)
 import Control.Monad (unless)
+import Data.List (delete)
+
+type Dungeon = [Room]
 
 data GameResult = Defeat | Victory deriving (Show, Eq)
 
 data Decision = Unknown | Go RoomExit | Attack Creature | Get Item
-
-type Dungeon = [Room]
 
 explore :: Player -> Room -> IO GameResult
 explore player room = do
@@ -21,18 +22,18 @@ explore player room = do
         then return Victory
         else do
             printOptions room
-            command <- getLine
+            command <- prompt "What is your decision?" (show player)
             let decision = parseDecision command room
             decide player room decision
 
 parseDecision :: String -> Room -> Decision
-parseDecision "" _                       = Unknown
-parseDecision cmd room@(Room _ ms is es)
+parseDecision ""  _                 = Unknown
+parseDecision cmd (Room _ ms is es)
     | command == "go"     = tryAction Go target es
     | command == "attack" = tryAction Attack target ms
     | command == "get"    = tryAction Get target is
     | otherwise           = Unknown
-    where tokens  = (words . map toLower) cmd
+    where tokens  = words cmd
           command = head tokens
           target  = unwords (tail tokens)
 
@@ -43,18 +44,22 @@ tryAction f target xs = tryAction' $ lookup target [(getName x, x) | x <- xs]
 
 decide :: Player -> Room -> Decision -> IO GameResult
 decide player room@(Room n ms is es) decision = case decision of
-                                    Unknown         -> explore player room
-                                    (Go target)     -> explore player (follow target)
+                                    Unknown         -> do
+                                        putStrLn "Unrecognized or malformed command."
+                                        explore player room
+                                    (Go target)     -> do
+                                        putStrLn $ "You went " ++ show target
+                                        explore player (follow target)
                                     (Attack target) -> do
                                         let (newPlayer, battleResult) = battle player target
-                                            ms'       = filter (/= target) ms
+                                            ms'       = delete target ms
                                             newRoom   = Room n ms' is es
                                         if battleResult == PlayerWon
                                             then explore newPlayer newRoom
                                             else return Defeat
                                     (Get target)    -> do
                                         let newPlayer = upgradePlayer player target
-                                            is'       = filter (/= target) is
+                                            is'       = delete target is
                                             newRoom   = Room n ms is' es
                                         explore newPlayer newRoom
 
@@ -67,7 +72,7 @@ showRoom :: Room -> String
 showRoom (Room n ms is es) = unlines ["\n\nYou enter a room.", n, showEncounter ms, showTreasure is, showExits es]
 
 printOptions :: Room -> IO ()
-printOptions (Room n ms is es) = do
+printOptions (Room _ ms is es) = do
     putStrLn "Available actions:"
     unless (null ms) (putStrLn "attack")
     unless (null is) (putStrLn "get")
@@ -83,21 +88,22 @@ showTreasure is = if null is
                      then "There is nothing of intereset."
                      else unlines $ "You some items in the light of your torch.":map show is
 
+showExits :: [RoomExit] -> String
 showExits es = if null es
                   then "It's the end of your journey."
-                  else "You see " ++ (show $ length es) ++ " exit(s)."
+                  else unlines $ "You can go:":map show es
 
 mkNarrativeChamber :: String -> [RoomExit] -> Room
-mkNarrativeChamber plot exits = Room plot [] [] exits
+mkNarrativeChamber plot = Room plot [] []
 
 mkEmptyRoom :: [RoomExit] -> Room
-mkEmptyRoom exits = mkNarrativeChamber "This is just an empty room" exits
+mkEmptyRoom = mkNarrativeChamber "This is just an empty room"
 
 mkEncounter :: [Creature] -> [RoomExit] -> Room
-mkEncounter monsters exits = Room "This chamber is infested with monsters" monsters [] exits
+mkEncounter monsters = Room "This chamber is infested with monsters" monsters []
 
 mkTreasure :: [Item] -> [RoomExit] -> Room
-mkTreasure items exits = Room "There's a lot of chests and other containers in this chamber" [] items exits
+mkTreasure = Room "There's a lot of chests and other containers in this chamber" []
 
 createDemoDungeon :: Dungeon
 createDemoDungeon = [room1, room2a, room2b, room3, room4, room5] where

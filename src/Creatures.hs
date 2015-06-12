@@ -2,22 +2,25 @@ module Creatures where
 
 import Common
 
-data BattleResult = CreatureWon | Draw | PlayerWon deriving (Show, Eq)
+data Creature = Creature Name Int Int Int deriving (Eq)
 
-data Creature = Creature Name Int Int Int deriving (Show, Eq)
+data BattleResult = CreatureWon | Draw | PlayerWon deriving (Eq)
 
 type Player = Creature
 
 instance NamedObject Creature where
     getName (Creature name _ _ _) = name
 
+instance Show Creature where
+    show (Creature name power armor health) = name ++ " " ++ show power ++ "/" ++ show armor ++ " (" ++ show health ++ ")"
+
 getPower, getArmor, getHealth :: Creature -> Int
 getPower (Creature _ power _ _)   = power
 getArmor (Creature _ _ armor _)   = armor
 getHealth (Creature _ _ _ health) = health
 
-newPlayer :: String -> Player
-newPlayer name = Creature name 1 0 10
+mkPlayer :: String -> Player
+mkPlayer name = Creature name 1 0 10
 
 goblin :: Creature
 goblin = Creature "a goblin" 1 0 3
