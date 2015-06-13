@@ -6,8 +6,8 @@ import           Items
 import           Presentation
 import           Rooms
 
-import           Data.List     (delete)
-import           Data.Maybe    (catMaybes)
+import           Data.List    (delete)
+import           Data.Maybe   (catMaybes)
 
 type Dungeon = [Room]
 
@@ -81,6 +81,7 @@ legalOptions (Room _ ms is es) = catMaybes [allowAttack ms, allowGet is, allowGo
         allowGet [] = Nothing
         allowGet _  = Just "get"
 
+        allowGo [] _ = Nothing
         allowGo _ [] = Just "go"
         allowGo _ _  = Nothing
 
