@@ -1,6 +1,6 @@
 module Creatures where
 
-import Common
+import           Common
 
 data Creature = Creature Name Int Int Int deriving (Eq)
 

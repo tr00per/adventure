@@ -1,8 +1,8 @@
 module Main where
 
-import Dungeon
-import Creatures
-import Presentation
+import           Creatures
+import           Dungeon
+import           Presentation
 
 main :: IO ()
 main = do

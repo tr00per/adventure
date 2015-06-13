@@ -1,6 +1,6 @@
 module Items where
 
-import Common
+import           Common
 
 data Item = Item Name ItemType deriving (Eq)
 

@@ -1,6 +1,6 @@
 module Presentation where
 
-import System.IO (hFlush, stdout)
+import           System.IO (hFlush, stdout)
 
 banner :: String -> IO ()
 banner msg = do
