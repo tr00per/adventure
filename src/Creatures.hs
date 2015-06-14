@@ -1,6 +1,9 @@
+{-# LANGUAGE ViewPatterns #-}
 module Creatures where
 
 import           Common
+
+import           Control.Monad.Writer (Writer, tell)
 
 data Creature = Creature Name Int Int Int deriving (Eq)
 
@@ -23,16 +26,28 @@ mkPlayer :: String -> Player
 mkPlayer name = Creature name 1 0 10
 
 goblin :: Creature
-goblin = Creature "a goblin" 1 0 3
+goblin = Creature "Goblin" 1 0 3
 
-battle :: Player -> Creature -> (Player, BattleResult)
-battle player@(getHealth -> 0) (getHealth -> 0) = (player, Draw)
-battle player@(getHealth -> 0) _                = (player, CreatureWon)
-battle player                  (getHealth -> 0) = (player, PlayerWon)
-battle p                       c                = battle (c `attack` p) (p `attack` c)
+battle :: Player -> Creature -> Writer [String] (Player, BattleResult)
+battle player@(getHealth -> 0) (getHealth -> 0) = do
+    tell ["You're both dead."]
+    return (player, Draw)
+battle player@(getHealth -> 0) _                = do
+    tell ["You're dead."]
+    return (player, CreatureWon)
+battle player                  (getHealth -> 0) = do
+    tell ["You won!"]
+    return (player, PlayerWon)
+battle p                       c                = do
+    newPlayer <- c `attack` p
+    newEnemy  <- p `attack` c
+    battle newPlayer newEnemy
 
-attack :: Creature -> Creature -> Creature
-attacker `attack` defender = reduceHealth defender (getPower attacker - getArmor defender)
+attack :: Creature -> Creature -> Writer [String] Creature
+attacker `attack` defender = do
+    let damage = getPower attacker - getArmor defender
+    tell [getName attacker ++ " deals " ++ show damage ++ " damage to " ++ getName defender]
+    return (reduceHealth defender damage)
 
 reduceHealth :: Creature -> Int -> Creature
 reduceHealth (Creature n p a h) damage = Creature n p a (h - damage)

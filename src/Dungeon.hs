@@ -6,8 +6,9 @@ import           Items
 import           Presentation
 import           Rooms
 
-import           Data.List    (delete)
-import           Data.Maybe   (catMaybes)
+import           Control.Monad.Writer (runWriter)
+import           Data.List            (delete)
+import           Data.Maybe           (catMaybes)
 
 type Dungeon = [Room]
 
@@ -55,9 +56,10 @@ decide player _                 (Go target)     = do
     putStrLn $ "You went " ++ show target
     explore player (follow target)
 decide player (Room n ms is es) (Attack target) = do
-    let (newPlayer, battleResult) = battle player target
+    let ((newPlayer, battleResult), steps) = runWriter (battle player target)
         ms'       = delete target ms
         newRoom   = Room n ms' is es
+    putStrLn $ unlines steps
     if battleResult == PlayerWon
         then explore newPlayer newRoom
         else return Defeat

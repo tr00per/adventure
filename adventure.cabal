@@ -9,5 +9,4 @@ Executable adventure
     Main-Is: Main.hs
     GHC-Options: -Wall -Werror
     HS-Source-Dirs: src
-    Build-Depends: base
-    Extensions: ViewPatterns
+    Build-Depends: base, mtl
