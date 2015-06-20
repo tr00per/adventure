@@ -19,7 +19,7 @@ data Decision = Unknown | Go RoomExit | Attack Creature | Get Item
 explore :: Player -> Room -> IO GameResult
 explore player room = do
     putStrLn $ showRoom room
-    if null (getExits room)
+    if isGameEnd room
         then return Victory
         else interaction player room
 
@@ -30,6 +30,22 @@ interaction player room = do
     command <- prompt "What is your decision?" (show player)
     let decision = parseDecision legal command room
     decide player room decision
+
+legalOptions :: Room -> [String]
+legalOptions (Room _ ms is es) = catMaybes [allowAttack ms, allowGet is, allowGo es ms]
+    where
+        allowAttack [] = Nothing
+        allowAttack _  = Just "attack"
+
+        allowGet [] = Nothing
+        allowGet _  = Just "get"
+
+        allowGo [] _ = Nothing
+        allowGo _ [] = Just "go"
+        allowGo _ _  = Nothing
+
+printOptions :: [String] -> IO ()
+printOptions options = putStrLn $ "Available actions:" ++ unlines options
 
 parseDecision :: [String] -> String -> Room -> Decision
 parseDecision _     ""  _                 = Unknown
@@ -73,22 +89,6 @@ upgradePlayer :: Player -> Item -> Player
 upgradePlayer p (Item _ (Weapon x)) = upgradePower p x
 upgradePlayer p (Item _ (Armor x))  = upgradeArmor p x
 upgradePlayer p (Item _ (Potion x)) = upgradeHealth p x
-
-legalOptions :: Room -> [String]
-legalOptions (Room _ ms is es) = catMaybes [allowAttack ms, allowGet is, allowGo es ms]
-    where
-        allowAttack [] = Nothing
-        allowAttack _  = Just "attack"
-
-        allowGet [] = Nothing
-        allowGet _  = Just "get"
-
-        allowGo [] _ = Nothing
-        allowGo _ [] = Just "go"
-        allowGo _ _  = Nothing
-
-printOptions :: [String] -> IO ()
-printOptions options = putStrLn $ "Available actions:" ++ unlines options
 
 createDemoDungeon :: Dungeon
 createDemoDungeon = [room1, room2a, room2b, room3, room4, room5] where

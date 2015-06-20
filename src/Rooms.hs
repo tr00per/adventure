@@ -1,3 +1,4 @@
+{-# LANGUAGE ViewPatterns #-}
 module Rooms where
 
 import           Common
@@ -5,11 +6,11 @@ import           Creatures (Creature)
 import           Items     (Item)
 
 data Room = Room {
-            getNarrative :: String,
-            getMonsters  :: [Creature],
-            getItems     :: [Item],
-            getExits     :: [RoomExit]
-} deriving (Show)
+    getNarrative :: String,
+    getMonsters  :: [Creature],
+    getItems     :: [Item],
+    getExits     :: [RoomExit]
+}
 
 data RoomExit = North Room | East Room | South Room | West Room
 
@@ -30,6 +31,10 @@ follow (West r)  = r
 
 showRoom :: Room -> String
 showRoom (Room n ms is es) = unlines ["\n\nYou enter a room.", n, showEncounter ms, showTreasure is, showExits es]
+
+isGameEnd :: Room -> Bool
+isGameEnd (getExits -> []) = True
+isGameEnd _                = False
 
 showEncounter :: [Creature] -> String
 showEncounter [] = "It's peaceful."
