@@ -11,9 +11,5 @@ main = do
     putStrLn $ "Welcome, " ++ name ++ " the Adventurer!"
     let player = mkPlayer name
         dungeon = createDemoDungeon
-    result <- runDungeon player dungeon
+    result <- explore player (entry dungeon)
     gameover (show result)
-
-runDungeon :: Player -> Dungeon -> IO GameResult
-runDungeon player (room:_) = explore player room
-runDungeon _      []       = return Defeat

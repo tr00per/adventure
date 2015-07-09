@@ -2,60 +2,62 @@
 module Rooms where
 
 import           Common
-import           Creatures (Creature)
-import           Items     (Item)
+import           Creatures (Creature, showCreature)
+import           Items     (Item, showItem)
 
 data Room = Room {
-    getNarrative :: String,
-    getMonsters  :: [Creature],
-    getItems     :: [Item],
-    getExits     :: [RoomExit]
+    narrative :: String,
+    monsters  :: [Creature],
+    items     :: [Item],
+    exits     :: [RoomExit],
+    flee      :: Maybe RoomExit
 }
 
-data RoomExit = North Room | East Room | South Room | West Room
+data RoomExit = North { follow :: Room } |
+                East { follow :: Room } |
+                South { follow :: Room } |
+                West { follow :: Room }
 
-instance Show RoomExit where
-    show (North _) = "North"
-    show (East _)  = "East"
-    show (South _) = "South"
-    show (West _)  = "West"
+showRoomExit :: RoomExit -> String
+showRoomExit (North _) = "North"
+showRoomExit (East _)  = "East"
+showRoomExit (South _) = "South"
+showRoomExit (West _)  = "West"
 
 instance NamedObject RoomExit where
-    getName = show
-
-follow :: RoomExit -> Room
-follow (North r) = r
-follow (East r)  = r
-follow (South r) = r
-follow (West r)  = r
+    getName = showRoomExit
 
 showRoom :: Room -> String
-showRoom (Room n ms is es) = unlines ["\n\nYou enter a room.", n, showEncounter ms, showTreasure is, showExits es]
+showRoom (Room n ms is es _) = unlines ["\n\nYou enter a room.", n, showEncounter ms, showTreasure is, showExits es]
 
 isGameEnd :: Room -> Bool
-isGameEnd (getExits -> []) = True
-isGameEnd _                = False
+isGameEnd (exits -> []) = True
+isGameEnd _             = False
+
+canFlee :: Room -> Bool
+canFlee (flee -> Just _) = True
+canFlee _                = False
 
 showEncounter :: [Creature] -> String
 showEncounter [] = "It's peaceful."
-showEncounter ms = unlines $ "Enemy's ahead!":map show ms
+showEncounter ms = unlines $ "Enemy's ahead!":map showCreature ms
 
 showTreasure :: [Item] -> String
 showTreasure [] = "There is nothing of intereset."
-showTreasure is = unlines $ "You some items in the light of your torch.":map show is
+showTreasure is = unlines $ "You some items in the light of your torch.":map showItem is
 
 showExits :: [RoomExit] -> String
 showExits [] = "It's the end of your journey."
-showExits es = unlines $ "You can go:":map show es
+showExits es = unlines $ "You can go:":map showRoomExit es
 
 mkNarrativeChamber :: String -> [RoomExit] -> Room
-mkNarrativeChamber plot = Room plot [] []
+mkNarrativeChamber plot es = Room plot [] [] es Nothing
 
 mkEmptyRoom :: [RoomExit] -> Room
 mkEmptyRoom = mkNarrativeChamber "This is just an empty room"
 
-mkEncounter :: [Creature] -> [RoomExit] -> Room
-mkEncounter monsters = Room "This chamber is infested with monsters" monsters []
+mkEncounter :: [Creature] -> [RoomExit] -> Maybe RoomExit -> Room
+mkEncounter ms es fl = Room "This chamber is infested with monsters" ms [] es fl
 
 mkTreasure :: [Item] -> [RoomExit] -> Room
-mkTreasure = Room "There's a lot of chests and other containers in this chamber" []
+mkTreasure is es = Room "There's a lot of chests and other containers in this chamber" [] is es Nothing
