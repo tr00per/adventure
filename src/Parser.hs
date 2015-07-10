@@ -5,6 +5,7 @@ import           Creatures
 import           Items
 import           Rooms
 
+import           Data.List  (find)
 import           Data.Maybe (catMaybes, fromJust)
 
 data Decision = Unknown | Go RoomExit | Attack Creature | Get Item
@@ -41,6 +42,4 @@ parseDecision legal cmd room
           target  = unwords (tail tokens)
 
 tryAction :: NamedObject a => (a -> Decision) -> String -> [a] -> Decision
-tryAction f target xs = tryAction' $ lookup target [(getName x, x) | x <- xs]
-  where   tryAction' Nothing       = Unknown
-          tryAction' (Just needle) = f needle
+tryAction f target xs = maybe Unknown f $ find ((== target) . getName) xs
