@@ -12,7 +12,7 @@ data Decision = Unknown | Go RoomExit | Attack Creature | Get Item
 
 legalOptions :: Room -> [String]
 legalOptions (Room _ ms is es fl) =
-        catMaybes [allow "attack" ms, allow "get" is, allowGo es ms, allowFlee fl]
+        catMaybes [allow "attack" ms, allow "get" is, allowGo es ms, allowFlee fl ms]
     where
         allow cmd targets
             | null targets = Nothing
@@ -22,8 +22,9 @@ legalOptions (Room _ ms is es fl) =
         allowGo _ [] = Just "go"
         allowGo _ _  = Nothing
 
-        allowFlee (Just _) = Just "flee"
-        allowFlee _        = Nothing
+        allowFlee _        [] = Nothing
+        allowFlee (Just _) _  = Just "flee"
+        allowFlee _        _  = Nothing
 
 printOptions :: [String] -> IO ()
 printOptions options = putStrLn $ unlines $ "Available actions:":options

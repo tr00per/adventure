@@ -29,22 +29,23 @@ mkPlayer :: String -> Player
 mkPlayer name = Player (Creature name 1 0 10)
 
 battle :: Player -> Creature -> Writer [String] (Player, BattleResult)
-battle player@(health . toCreature -> 0) (health -> 0) = do
-    tell ["You're both dead."]
-    return (player, Draw)
-battle player@(health . toCreature -> 0) _             = do
-    tell ["You're dead."]
-    return (player, CreatureWon)
-battle player                            (health -> 0) = do
-    tell ["You won!"]
-    return (player, PlayerWon)
-battle player                            enemy         = do
-    newPlayer <- enemy `attack` toCreature player
-    newEnemy  <- toCreature player `attack` enemy
-    if toCreature player == newPlayer && enemy == newEnemy
-        then do tell ["Your attacks have no effect!"]
-                return (player, NoEffect)
-        else battle (Player newPlayer) newEnemy
+battle player@(toCreature -> pc) enemy
+    | health pc <= 0 && health enemy <= 0 = do
+        tell ["You're both dead."]
+        return (player, Draw)
+    | health pc <= 0    = do
+        tell ["You're dead."]
+        return (player, CreatureWon)
+    | health enemy <= 0 = do
+        tell ["You won!"]
+        return (player, PlayerWon)
+    | otherwise         = do
+        newPlayer <- enemy `attack` toCreature player
+        newEnemy  <- toCreature player `attack` enemy
+        if toCreature player == newPlayer && enemy == newEnemy
+            then do tell ["Your attacks have no effect!"]
+                    return (player, NoEffect)
+            else battle (Player newPlayer) newEnemy
 
 attack :: Creature -> Creature -> Writer [String] Creature
 attacker `attack` defender = do

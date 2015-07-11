@@ -25,3 +25,6 @@ showItemType (Potion _) = "Potion"
 
 sword :: Item
 sword = Item "Common Sword" (Weapon 2)
+
+smallPotion :: Item
+smallPotion = Item "Small Potion" (Potion 5)
