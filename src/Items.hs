@@ -3,14 +3,14 @@ module Items where
 import           Common
 
 data Item = Item {
-                itemName :: Name,
-                itemType :: ItemType
-            } deriving (Eq)
+    itemName :: Name,
+    itemType :: ItemType
+} deriving (Eq, Show, Read)
 
 data ItemType = Weapon Int |
                 Armor Int |
                 Potion Int
-            deriving (Eq)
+            deriving (Eq, Show, Read)
 
 instance NamedObject Item where
     getName (Item name _) = name

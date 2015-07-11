@@ -11,18 +11,16 @@ data Room = Room {
     items     :: [Item],
     exits     :: [RoomExit],
     flee      :: Maybe RoomExit
-}
+} deriving (Show, Read)
 
-data RoomExit = North { follow :: Room } |
-                East { follow :: Room } |
-                South { follow :: Room } |
-                West { follow :: Room }
+data Direction = North | East | South | West deriving (Show, Read)
+
+newtype Position = Position { position :: Int } deriving (Show, Read)
+
+data RoomExit = Exit Direction Position deriving (Show, Read)
 
 showRoomExit :: RoomExit -> String
-showRoomExit (North _) = "North"
-showRoomExit (East _)  = "East"
-showRoomExit (South _) = "South"
-showRoomExit (West _)  = "West"
+showRoomExit (Exit name _) = show name
 
 instance NamedObject RoomExit where
     getName = showRoomExit
@@ -57,7 +55,7 @@ mkEmptyRoom :: [RoomExit] -> Room
 mkEmptyRoom = mkNarrativeChamber "This is just an empty room"
 
 mkEncounter :: [Creature] -> [RoomExit] -> Maybe RoomExit -> Room
-mkEncounter ms es fl = Room "This chamber is infested with monsters" ms [] es fl
+mkEncounter ms = Room "This chamber is infested with monsters" ms []
 
 mkTreasure :: [Item] -> [RoomExit] -> Room
 mkTreasure is es = Room "There's a lot of chests and other containers in this chamber" [] is es Nothing

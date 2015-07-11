@@ -6,11 +6,11 @@ import           Common
 import           Control.Monad.Writer (Writer, tell)
 
 data Creature = Creature {
-                    creatureName :: Name,
-                    power :: Int,
-                    armor :: Int,
-                    health :: Int
-                } deriving (Eq)
+    creatureName :: Name,
+    power        :: Int,
+    armor        :: Int,
+    health       :: Int
+} deriving (Eq, Show, Read)
 
 data BattleResult = CreatureWon | Draw | PlayerWon | NoEffect deriving (Eq)
 
