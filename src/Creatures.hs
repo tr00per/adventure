@@ -2,6 +2,7 @@
 module Creatures where
 
 import           Common
+import           Items
 
 import           Control.Monad.Writer (Writer, tell)
 
@@ -63,6 +64,11 @@ upgradeArmor player@(toCreature -> creature) v  =
     if armor creature < v then Player (creature { armor = v }) else player
 upgradeHealth player@(toCreature -> creature) v =
     if health creature < v then Player (creature { health = v }) else player
+
+upgradePlayer :: Player -> Item -> Player
+upgradePlayer p (Item _ (Weapon x)) = upgradePower p x
+upgradePlayer p (Item _ (Armor x))  = upgradeArmor p x
+upgradePlayer p (Item _ (Potion x)) = upgradeHealth p x
 
 goblin :: Creature
 goblin = Creature "Goblin" 1 0 3

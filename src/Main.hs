@@ -1,9 +1,9 @@
 module Main where
 
-import           Creatures
-import           Dungeon
-import           Exploration
-import           Presentation
+import           Creatures    (mkPlayer)
+import           Dungeon      (createDemoDungeon, entry)
+import           Exploration  (explore)
+import           Presentation (banner, gameover, prompt)
 
 main :: IO ()
 main = do
@@ -12,6 +12,6 @@ main = do
     putStrLn $ "Welcome, " ++ name ++ " the Adventurer!"
     let player = mkPlayer name
         dungeon = createDemoDungeon
-    print $ rooms dungeon
+    print dungeon
     result <- explore player (entry dungeon)
     gameover (show result)

@@ -15,7 +15,7 @@ data Room = Room {
 
 data Direction = North | East | South | West deriving (Show, Read)
 
-newtype Position = Position { position :: Int } deriving (Show, Read)
+type Position = Int
 
 data RoomExit = Exit Direction Position deriving (Show, Read)
 
