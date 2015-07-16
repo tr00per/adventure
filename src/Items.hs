@@ -1,6 +1,6 @@
 module Items where
 
-import           Common
+import           Common (Name, NamedObject (..))
 
 data Item = Item {
     itemName :: Name,

@@ -1,8 +1,9 @@
 module Dungeon where
 
-import           Creatures
-import           Items
-import           Rooms
+import           Creatures (goblin, woodenDoor)
+import           Items     (smallPotion, sword)
+import           Rooms     (Direction (..), Room, RoomExit (..), mkEncounter,
+                            mkNarrativeChamber, mkTreasure)
 
 type Dungeon = [Room]
 
@@ -22,7 +23,7 @@ dungeon :: DungeonState -> Dungeon
 dungeon (before, after) = before ++ after
 
 updateCurrent :: Room -> DungeonState -> DungeonState
-updateCurrent _ (_, [])             = error "Degenerated dungeon"
+updateCurrent _   (_, [])           = error "Degenerated dungeon"
 updateCurrent new (before, _:after) = (before, new:after)
 
 createDemoDungeon :: Dungeon

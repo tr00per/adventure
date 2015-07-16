@@ -1,11 +1,15 @@
 {-# LANGUAGE ViewPatterns #-}
 module Exploration where
 
-import           Creatures
-import           Dungeon
-import           Parser
-import           Presentation
-import           Rooms
+import           Creatures            (BattleResult (..), Player, battle,
+                                       showPlayer, upgradePlayer)
+import           Dungeon              (DungeonState, currentRoom, dungeon,
+                                       follow, updateCurrent)
+import           Parser               (Decision (..), legalOptions,
+                                       parseDecision, printOptions)
+import           Presentation         (prompt)
+import           Rooms                (Room (..), isGameEnd, showRoom,
+                                       showRoomExit)
 
 import           Control.Monad.Writer (runWriter)
 import           Data.List            (delete)

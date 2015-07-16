@@ -1,9 +1,9 @@
 module Parser where
 
-import           Common
-import           Creatures
-import           Items
-import           Rooms
+import           Common     (NamedObject (..))
+import           Creatures  (Creature)
+import           Items      (Item)
+import           Rooms      (Room (..), RoomExit, canFlee)
 
 import           Data.List  (find)
 import           Data.Maybe (catMaybes, fromJust)

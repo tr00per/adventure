@@ -1,8 +1,8 @@
 {-# LANGUAGE ViewPatterns #-}
 module Creatures where
 
-import           Common
-import           Items
+import           Common               (Name, NamedObject (..))
+import           Items                (Item (..), ItemType (..))
 
 import           Control.Monad.Writer (Writer, tell)
 

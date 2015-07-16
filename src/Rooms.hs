@@ -1,7 +1,7 @@
 {-# LANGUAGE ViewPatterns #-}
 module Rooms where
 
-import           Common
+import           Common    (NamedObject (..))
 import           Creatures (Creature, showCreature)
 import           Items     (Item, showItem)
 
