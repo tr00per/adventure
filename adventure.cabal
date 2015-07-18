@@ -1,12 +1,25 @@
 Name: Adventure
-Version: 0.3
+Synopsis: Adventure for fun and profit
+Description: Fun is in creating something to play with. Profit is in
+             learning.
+Copyright: Artur Czajka <arturczajka@gmail.com>
+Maintainer: Artur Czajka <arturczajka@gmail.com>
+Version: 0.4
+Category: Game
 License: BSD2
-Copyright: Artur Czajka
-Cabal-Version: >= 1.2
+License-File: LICENSE
+Cabal-Version: >= 1.6
 Build-Type: Simple
+
+Data-Dir: src/main/resources
+Data-Files: demo_dungeon.txt
 
 Executable adventure
     Main-Is: Main.hs
-    GHC-Options: -Wall -Werror
-    HS-Source-Dirs: src
-    Build-Depends: base, mtl
+    GHC-Options: -Wall
+    HS-Source-Dirs: src/main/haskell
+    Build-Depends: base, mtl, directory
+
+Source-Repository head
+    Type: git
+    Location: https://github.com/tr00per/adventure.git
