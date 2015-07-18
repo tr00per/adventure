@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>info.tr00per</groupId>
+    <artifactId>adventure</artifactId>
+    <version>0.4</version>
+    <packaging>pom</packaging>
+    <properties>
+        <src.main>Main.hs</src.main>
+        <ghc.options>-Wall -Werror</ghc.options>
+        <build.targetDirectory>target</build.targetDirectory>
+        <build.relativePrefix>../../..</build.relativePrefix>
+        <build.buildDirectory>${build.targetDirectory}/build</build.buildDirectory>
+        <build.distDirectory>${build.targetDirectory}/dist</build.distDirectory>
+        <build.testDirectory>${build.targetDirectory}/test</build.testDirectory>
+        <build.relativeBuildDirectory>${build.relativePrefix}/${build.buildDirectory}</build.relativeBuildDirectory>
+        <build.relativeOutputDirectory>${build.relativePrefix}/${build.distDirectory}</build.relativeOutputDirectory>
+        <build.relativeTestOutputDirectory>${build.relativePrefix}/${build.testDirectory}</build.relativeTestOutputDirectory>
+    </properties>
+    <build>
+        <finalName>${project.artifactId}-${project.version}</finalName>
+        <sourceDirectory>src/main/haskell</sourceDirectory>
+        <testSourceDirectory>src/test/haskell</testSourceDirectory>
+        <directory>${build.targetDirectory}</directory>
+        <outputDirectory>${build.distDirectory}</outputDirectory>
+        <testOutputDirectory>${build.testDirectory}</testOutputDirectory>
+        <plugins>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.7</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>create-output-dirs</id>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${build.distDirectory}"/>
+                                <mkdir dir="${build.buildDirectory}"/>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>compile-haskell</id>
+                        <phase>compile</phase>
+                        <configuration>
+                            <target>
+                                <exec executable="ghc" dir="${project.build.sourceDirectory}" failonerror="true">
+                                    <arg value="${src.main}"/>
+                                    <arg line="${ghc.options}"/>
+                                    <arg value="-outputdir"/>
+                                    <arg value="${build.relativeBuildDirectory}"/>
+                                    <arg value="-o"/>
+                                    <arg value="${build.relativeOutputDirectory}/${project.artifactId}"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.5.5</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/assembly/assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>create-package</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
