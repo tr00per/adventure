@@ -3,11 +3,10 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>info.tr00per</groupId>
     <artifactId>adventure</artifactId>
-    <version>0.4</version>
+    <version>0.5</version>
     <packaging>pom</packaging>
     <properties>
-        <src.main>Main.hs</src.main>
-        <ghc.options>-Wall -Werror</ghc.options>
+        <build.confDirectory>src/conf</build.confDirectory>
         <build.targetDirectory>target</build.targetDirectory>
         <build.relativePrefix>../../..</build.relativePrefix>
         <build.buildDirectory>${build.targetDirectory}/build</build.buildDirectory>
@@ -16,6 +15,7 @@
         <build.relativeBuildDirectory>${build.relativePrefix}/${build.buildDirectory}</build.relativeBuildDirectory>
         <build.relativeOutputDirectory>${build.relativePrefix}/${build.distDirectory}</build.relativeOutputDirectory>
         <build.relativeTestOutputDirectory>${build.relativePrefix}/${build.testDirectory}</build.relativeTestOutputDirectory>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <build>
         <finalName>${project.artifactId}-${project.version}</finalName>
@@ -35,6 +35,25 @@
                         <goals>
                             <goal>resources</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>copy-cabal</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${build.confDirectory}</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>project.cabal</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -60,13 +79,10 @@
                         <phase>compile</phase>
                         <configuration>
                             <target>
-                                <exec executable="ghc" dir="${project.build.sourceDirectory}" failonerror="true">
-                                    <arg value="${src.main}"/>
-                                    <arg line="${ghc.options}"/>
-                                    <arg value="-outputdir"/>
-                                    <arg value="${build.relativeBuildDirectory}"/>
-                                    <arg value="-o"/>
-                                    <arg value="${build.relativeOutputDirectory}/${project.artifactId}"/>
+                                <exec executable="cabal" dir="${project.basedir}" failonerror="true">
+                                    <arg value="build"/>
+                                    <arg value="--builddir"/>
+                                    <arg value="${build.targetDirectory}"/>
                                 </exec>
                             </target>
                         </configuration>
@@ -81,7 +97,7 @@
                 <version>2.5.5</version>
                 <configuration>
                     <descriptors>
-                        <descriptor>src/assembly/assembly.xml</descriptor>
+                        <descriptor>src/conf/assembly.xml</descriptor>
                     </descriptors>
                 </configuration>
                 <executions>

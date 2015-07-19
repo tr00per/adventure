@@ -1,0 +1,21 @@
+Name: Adventure
+Synopsis: Adventure for fun and profit
+Description: Fun is in creating something to play with. Profit is in
+             learning.
+Copyright: Artur Czajka <arturczajka@gmail.com>
+Version: ${project.version}
+Category: Game
+License: BSD2
+License-File: LICENSE
+Cabal-Version: >= 1.6
+Build-Type: Simple
+
+Executable ${project.artifactId}
+    Main-Is: Main.hs
+    GHC-Options: -Wall -Werror
+    HS-Source-Dirs: ${project.build.sourceDirectory}
+    Build-Depends: base, mtl, directory
+
+Source-Repository head
+    Type: git
+    Location: https://github.com/tr00per/adventure.git

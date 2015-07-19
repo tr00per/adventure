@@ -8,9 +8,6 @@
         <fileSet>
             <outputDirectory>resources</outputDirectory>
             <includes/>
-            <excludes>
-                <exclude>${project.artifactId}</exclude>
-            </excludes>
             <directory>${build.distDirectory}</directory>
         </fileSet>
     </fileSets>
@@ -19,7 +16,7 @@
             <source>LICENSE</source>
         </file>
         <file>
-            <source>${build.distDirectory}/${project.artifactId}</source>
+            <source>${build.buildDirectory}/${project.artifactId}/${project.artifactId}</source>
         </file>
     </files>
 </assembly>
