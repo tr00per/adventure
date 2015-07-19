@@ -16,6 +16,13 @@ prompt msg status = do
     hFlush stdout
     getLine
 
+promptWithDefault :: String -> String -> IO String
+promptWithDefault msg defaultValue = do
+    result <- prompt msg ("default: " ++ defaultValue)
+    if null result
+        then return defaultValue
+        else return result
+
 gameover :: String -> IO ()
 gameover msg = do
     putStrLn "G A M E   O V E R"
