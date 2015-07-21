@@ -62,8 +62,8 @@ loadDungeonWithDefault :: Dungeon -> String -> IO Dungeon
 loadDungeonWithDefault defaultDungeon name
     | name == "new" = return defaultDungeon
     | otherwise     = bracketOnError (readFile name) (\_ -> return defaultDungeon) $ \contents ->
-        let theLevel = readEither contents in
-        theLevel `seq` fromEitherIO theLevel (\err -> putStrLn err >> loadLevel) return
+        let theLevel = readEither contents
+        in theLevel `seq` fromEitherIO theLevel (\err -> putStrLn err >> loadLevel) return
 
 loadDungeon :: String -> IO Dungeon
 loadDungeon = loadDungeonWithDefault createDemoDungeon

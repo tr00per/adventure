@@ -41,9 +41,9 @@ battle player@(toCreature -> pc) enemy
         tell ["You won!"]
         return (player, PlayerWon)
     | otherwise         = do
-        newPlayer <- enemy `attack` toCreature player
-        newEnemy  <- toCreature player `attack` enemy
-        if toCreature player == newPlayer && enemy == newEnemy
+        newPlayer <- enemy `attack` pc
+        newEnemy  <- pc `attack` enemy
+        if pc == newPlayer && enemy == newEnemy
             then do tell ["Your attacks have no effect!"]
                     return (player, NoEffect)
             else battle (Player newPlayer) newEnemy
@@ -58,12 +58,12 @@ reduceHealth :: Creature -> Int -> Creature
 reduceHealth creature damage = creature { health = health creature - damage }
 
 upgradePower, upgradeArmor, upgradeHealth :: Player -> Int -> Player
-upgradePower player@(toCreature -> creature) v  =
-    if power creature < v then Player (creature { power = v }) else player
-upgradeArmor player@(toCreature -> creature) v  =
-    if armor creature < v then Player (creature { armor = v }) else player
-upgradeHealth player@(toCreature -> creature) v =
-    if health creature < v then Player (creature { health = v }) else player
+upgradePower player@(toCreature -> pc) newValue  =
+    if power pc < newValue then Player (pc { power = newValue }) else player
+upgradeArmor player@(toCreature -> pc) newValue  =
+    if armor pc < newValue then Player (pc { armor = newValue }) else player
+upgradeHealth player@(toCreature -> pc) newValue =
+    if health pc < newValue then Player (pc { health = newValue }) else player
 
 upgradePlayer :: Player -> Item -> Player
 upgradePlayer p (Item _ (Weapon x)) = upgradePower p x
