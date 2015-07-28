@@ -29,8 +29,7 @@ showRoom :: Room -> String
 showRoom (Room n ms is es _) = unlines ["\n\nYou enter a room.", n, showEncounter ms, showTreasure is, showExits es]
 
 isGameEnd :: Room -> Bool
-isGameEnd (exits -> []) = True
-isGameEnd _             = False
+isGameEnd = null . exits
 
 canFlee :: Room -> Bool
 canFlee (flee -> Just _) = True

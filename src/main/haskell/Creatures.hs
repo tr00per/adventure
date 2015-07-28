@@ -50,25 +50,20 @@ battle player@(toCreature -> pc) enemy
 
 attack :: Creature -> Creature -> Writer [String] Creature
 attacker `attack` defender = do
-    let damage = power attacker - armor defender
+    let damage = max 0 (power attacker - armor defender)
     tell [getName attacker ++ " deals " ++ show damage ++ " damage to " ++ getName defender]
     return (reduceHealth defender damage)
 
 reduceHealth :: Creature -> Int -> Creature
-reduceHealth creature damage = creature { health = health creature - damage }
-
-upgradePower, upgradeArmor, upgradeHealth :: Player -> Int -> Player
-upgradePower player@(toCreature -> pc) newValue  =
-    if power pc < newValue then Player (pc { power = newValue }) else player
-upgradeArmor player@(toCreature -> pc) newValue  =
-    if armor pc < newValue then Player (pc { armor = newValue }) else player
-upgradeHealth player@(toCreature -> pc) newValue =
-    if health pc < newValue then Player (pc { health = newValue }) else player
+reduceHealth creature damage = creature { health = max 0 (health creature - damage) }
 
 upgradePlayer :: Player -> Item -> Player
-upgradePlayer p (Item _ (Weapon x)) = upgradePower p x
-upgradePlayer p (Item _ (Armor x))  = upgradeArmor p x
-upgradePlayer p (Item _ (Potion x)) = upgradeHealth p x
+upgradePlayer player@(toCreature -> pc) (Item _ (Weapon newValue)) =
+    if power pc < newValue then Player (pc { power = newValue }) else player
+upgradePlayer player@(toCreature -> pc) (Item _ (Armor newValue))  =
+    if armor pc < newValue then Player (pc { armor = newValue }) else player
+upgradePlayer player@(toCreature -> pc) (Item _ (Potion newValue)) =
+    if health pc < newValue then Player (pc { health = newValue }) else player
 
 goblin :: Creature
 goblin = Creature "Goblin" 1 0 3
