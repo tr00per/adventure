@@ -14,7 +14,12 @@ import           Rooms                (Room (..), isGameEnd, showRoom,
 import           Control.Monad.Writer (runWriter)
 import           Data.List            (delete)
 
-data GameResult = Defeat | Victory deriving (Show, Eq)
+data GameResult = Defeat | Victory | SaveGame (Player, DungeonState)
+
+instance Show GameResult where
+    show Defeat  = "Defeat."
+    show Victory = "Victory!"
+    show _       = error "Shouldn't get there"
 
 explore :: Player -> DungeonState -> IO GameResult
 explore player dstate = do
@@ -37,6 +42,9 @@ decide :: Player -> Decision -> DungeonState -> IO GameResult
 decide player Unknown         dstate = do
     putStrLn "Unrecognized or malformed command."
     explore player dstate
+decide player Save            dstate = do
+    putStrLn "Save and exit."
+    return $ SaveGame (player, dstate)
 decide player (Go target)     dstate = do
     putStrLn $ "You went " ++ showRoomExit target
     explore player (follow target $ dungeon dstate)

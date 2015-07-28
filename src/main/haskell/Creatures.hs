@@ -15,10 +15,13 @@ data Creature = Creature {
 
 data BattleResult = CreatureWon | Draw | PlayerWon | NoEffect deriving (Eq)
 
-newtype Player = Player { toCreature :: Creature }
+newtype Player = Player { toCreature :: Creature } deriving (Show)
 
 instance NamedObject Creature where
     getName = creatureName
+
+instance NamedObject Player where
+    getName = creatureName . toCreature
 
 showCreature :: Creature -> String
 showCreature (Creature n p a h) = n ++ " " ++ show p ++ "/" ++ show a ++ " (" ++ show h ++ ")"
@@ -57,13 +60,16 @@ attacker `attack` defender = do
 reduceHealth :: Creature -> Int -> Creature
 reduceHealth creature damage = creature { health = max 0 (health creature - damage) }
 
-upgradePlayer :: Player -> Item -> Player
-upgradePlayer player@(toCreature -> pc) (Item _ (Weapon newValue)) =
-    if power pc < newValue then Player (pc { power = newValue }) else player
-upgradePlayer player@(toCreature -> pc) (Item _ (Armor newValue))  =
-    if armor pc < newValue then Player (pc { armor = newValue }) else player
-upgradePlayer player@(toCreature -> pc) (Item _ (Potion newValue)) =
-    if health pc < newValue then Player (pc { health = newValue }) else player
+class PlayerUpgrade u where
+    upgradePlayer :: Player -> u -> Player
+
+instance PlayerUpgrade Item where
+    upgradePlayer player@(toCreature -> pc) (Item _ (Weapon newValue)) =
+        if power pc < newValue then Player (pc { power = newValue }) else player
+    upgradePlayer player@(toCreature -> pc) (Item _ (Armor newValue))  =
+        if armor pc < newValue then Player (pc { armor = newValue }) else player
+    upgradePlayer player@(toCreature -> pc) (Item _ (Potion newValue)) =
+        if health pc < newValue then Player (pc { health = newValue }) else player
 
 goblin :: Creature
 goblin = Creature "Goblin" 1 0 3

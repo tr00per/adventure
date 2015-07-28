@@ -8,12 +8,14 @@ import           Rooms      (Room (..), RoomExit, canFlee)
 import           Data.List  (find)
 import           Data.Maybe (catMaybes, fromJust)
 
-data Decision = Unknown | Go RoomExit | Attack Creature | Get Item
+data Decision = Unknown | Save | Go RoomExit | Attack Creature | Get Item
 
 legalOptions :: Room -> [String]
 legalOptions (Room _ ms is es fl) =
-    catMaybes [allow "attack" ms, allow "get" is, allowGo es ms, allowFlee fl ms]
+    catMaybes [allow "attack" ms, allow "get" is, allowGo es ms, allowFlee fl ms] ++ defaults
     where
+        defaults = ["save"]
+
         allow cmd targets
             | null targets = Nothing
             | otherwise    = Just cmd
@@ -33,6 +35,7 @@ parseDecision :: [String] -> String -> Room -> Decision
 parseDecision _     ""  _     = Unknown
 parseDecision legal cmd room
     | command `notElem` legal = Unknown
+    | command == "save"       = Save
     | command == "go"         = tryAction Go target (exits room)
     | command == "attack"     = tryAction Attack target (monsters room)
     | command == "get"        = tryAction Get target (items room)

@@ -1,7 +1,7 @@
 module Dungeon where
 
 import           Common                 (fromEitherIO)
-import           Creatures              (goblin, woodenDoor)
+import           Creatures              (Creature, goblin, woodenDoor)
 import           Items                  (smallPotion, sword)
 import           Presentation           (promptWithDefault)
 import           Rooms                  (Direction (..), Room, RoomExit (..),
@@ -71,3 +71,6 @@ printErrorAndLoop err = putStrLn err >> loadLevel
 
 loadDungeon :: String -> IO Dungeon
 loadDungeon = loadDungeonWithDefault createDemoDungeon
+
+saveGame :: Creature -> Dungeon -> IO ()
+saveGame pc d = print pc >> print d
