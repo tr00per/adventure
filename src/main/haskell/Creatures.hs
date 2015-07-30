@@ -1,4 +1,5 @@
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ViewPatterns               #-}
 module Creatures where
 
 import           Common               (Name, NamedObject (..))
@@ -15,13 +16,10 @@ data Creature = Creature {
 
 data BattleResult = CreatureWon | Draw | PlayerWon | NoEffect deriving (Eq)
 
-newtype Player = Player { toCreature :: Creature } deriving (Show)
+newtype Player = Player { toCreature :: Creature } deriving (NamedObject, Show, Read)
 
 instance NamedObject Creature where
     getName = creatureName
-
-instance NamedObject Player where
-    getName = creatureName . toCreature
 
 showCreature :: Creature -> String
 showCreature (Creature n p a h) = n ++ " " ++ show p ++ "/" ++ show a ++ " (" ++ show h ++ ")"
