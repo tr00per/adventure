@@ -17,6 +17,10 @@ import           System.IO              (IOMode (..), hClose, hPrint, hGetLine,
                                          openFile)
 import           Text.Read              (readEither)
 
+type GameState = (Player, DungeonState)
+
+data GameStatus = GameError String | NewGame GameState | GameLoaded GameState | GameSaved
+
 defaultLevel :: Dungeon
 defaultLevel = [room0, room1, room2, room3, room4] where
     room0 = mkNarrativeChamber
@@ -29,9 +33,11 @@ defaultLevel = [room0, room1, room2, room3, room4] where
                 "You found the tomb of the Demo Demon, but it's empty.\
                 \You go back to your home village and to your daily life." []
 
-fromEitherIO :: (a -> IO c) -> (b -> IO c) -> Either a b -> IO c
-fromEitherIO onLeft _       (Left x)  = onLeft x
-fromEitherIO _      onRight (Right x) = onRight x
+saveGameName :: FilePath
+saveGameName = "savegame.txt"
+
+saveGameExists :: IO Bool
+saveGameExists = isReadable saveGameName
 
 isReadable :: FilePath -> IO Bool
 isReadable name = do
@@ -43,30 +49,29 @@ isReadable name = do
 tryIO :: IO a -> IO (Either IOException a)
 tryIO = try
 
-saveGameName :: FilePath
-saveGameName = "savegame.txt"
+gameLoaded :: Either String Player -> Either String DungeonState -> GameStatus
+gameLoaded (Right player) (Right dstate) = GameLoaded (player, dstate)
+gameLoaded (Left err)     _              = GameError ("Error while saving Player: " ++ err)
+gameLoaded _              (Left err)     = GameError ("Error while saving Dungeon: " ++ err)
 
-saveGameExists :: IO Bool
-saveGameExists = isReadable saveGameName
+gameSaved :: Either IOError () -> Either IOError () -> GameStatus
+gameSaved (Right ())     (Right ())     = GameSaved
+gameSaved (Left err)     _              = GameError ("Error while loading Player: " ++ show err)
+gameSaved _              (Left err)     = GameError ("Error while loading Dungeon: " ++ show err)
 
-both :: Show e => Either e a -> Either e b -> Either String (a, b)
-both (Right player) (Right dstate) = Right (player, dstate)
-both (Left err)     _              = Left ("Error while processing Player: " ++ show err)
-both _              (Left err)     = Left ("Error while processing Dungeon: " ++ show err)
-
-loadAdventure :: IO (Either String (Player, DungeonState))
-loadAdventure = bracket (openFile saveGameName ReadMode) hClose loadData
-    where loadData handle = do player <- readEither `liftM` hGetLine handle
-                               dstate <- readEither `liftM` hGetLine handle
-                               return (both player dstate)
-
-saveAdventure :: Player -> DungeonState -> IO (Either String ((),()))
+saveAdventure :: Player -> DungeonState -> IO GameStatus
 saveAdventure player dstate = bracket (openFile saveGameName WriteMode) hClose storeData
     where storeData handle = do playerWritten <- tryIO (hPrint handle player)
                                 dstateWritten <- tryIO (hPrint handle dstate)
-                                return (both playerWritten dstateWritten)
+                                return (gameSaved playerWritten dstateWritten)
 
-newAdventure :: IO (Player, DungeonState)
+loadAdventure :: IO GameStatus
+loadAdventure = bracket (openFile saveGameName ReadMode) hClose loadData
+    where loadData handle = do player <- readEither `liftM` hGetLine handle
+                               dstate <- readEither `liftM` hGetLine handle
+                               return (gameLoaded player dstate)
+
+newAdventure :: IO GameStatus
 newAdventure = do
     name <- prompt "How do they call you, friend?" "Enter your name"
-    return (mkPlayer name, entry defaultLevel)
+    return $ NewGame (mkPlayer name, entry defaultLevel)
