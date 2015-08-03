@@ -46,30 +46,30 @@ isReadable name = do
         then readable `liftM` getPermissions name
         else return False
 
-tryIO :: IO a -> IO (Either IOException a)
-tryIO = try
+tryEither :: IO a -> IO (Either String a)
+tryEither = liftM translate . tryIO
+    where translate (Left x)  = Left (show x)
+          translate (Right x) = Right x
 
-gameLoaded :: Either String Player -> Either String DungeonState -> GameStatus
-gameLoaded (Right player) (Right dstate) = GameLoaded (player, dstate)
-gameLoaded (Left err)     _              = GameError ("Error while saving Player: " ++ err)
-gameLoaded _              (Left err)     = GameError ("Error while saving Dungeon: " ++ err)
+          tryIO :: IO a -> IO (Either IOException a)
+          tryIO = try
 
-gameSaved :: Either IOError () -> Either IOError () -> GameStatus
-gameSaved (Right ())     (Right ())     = GameSaved
-gameSaved (Left err)     _              = GameError ("Error while loading Player: " ++ show err)
-gameSaved _              (Left err)     = GameError ("Error while loading Dungeon: " ++ show err)
+statusChanged :: Either String a -> Either String b -> (a -> b -> GameStatus) -> GameStatus
+statusChanged (Right x)  (Right y)  f = f x y
+statusChanged (Left err) _          _ = GameError ("Error while processing Player: " ++ show err)
+statusChanged _          (Left err) _ = GameError ("Error while processing Dungeon: " ++ show err)
 
 saveAdventure :: Player -> DungeonState -> IO GameStatus
 saveAdventure player dstate = bracket (openFile saveGameName WriteMode) hClose storeData
-    where storeData handle = do playerWritten <- tryIO (hPrint handle player)
-                                dstateWritten <- tryIO (hPrint handle dstate)
-                                return (gameSaved playerWritten dstateWritten)
+    where storeData handle = do playerWritten <- tryEither (hPrint handle player)
+                                dstateWritten <- tryEither (hPrint handle dstate)
+                                return $ statusChanged playerWritten dstateWritten (\_ _ -> GameSaved)
 
 loadAdventure :: IO GameStatus
 loadAdventure = bracket (openFile saveGameName ReadMode) hClose loadData
     where loadData handle = do player <- readEither `liftM` hGetLine handle
                                dstate <- readEither `liftM` hGetLine handle
-                               return (gameLoaded player dstate)
+                               return $ statusChanged player dstate (curry GameLoaded)
 
 newAdventure :: IO GameStatus
 newAdventure = do
