@@ -4,7 +4,9 @@ module Main where
 import           Common       (NamedObject (..))
 import           Exploration  (GameResult (..), explore)
 import           Presentation (banner, gameover)
-import           SavegameIO   (GameStatus (..), saveGameExists, loadAdventure, newAdventure, saveAdventure)
+import           SavegameIO   (GameStatus (..), loadAdventure, newAdventure,
+                               removeSavedAdventure, saveAdventure,
+                               saveGameExists)
 
 main :: IO ()
 main = do
@@ -27,7 +29,8 @@ startGame status
 endGame :: GameResult -> IO ()
 endGame (SaveGame (p, ds)) = do savedGame <- saveAdventure p ds
                                 case savedGame of
-                                  GameError msg -> putStrLn $ "Error while saving the game: " ++ msg
-                                  GameSaved     -> return ()
-                                  _             -> error "Wrong game status"
-endGame result = gameover (show result)
+                                    GameError msg -> putStrLn $ "Error while saving the game: " ++ msg
+                                    GameSaved     -> return ()
+                                    _             -> error "Wrong game status"
+endGame result = do removeSavedAdventure
+                    gameover (show result)

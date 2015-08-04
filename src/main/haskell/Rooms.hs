@@ -31,17 +31,13 @@ showRoom (Room n ms is es _) = unlines ["\n\nYou enter a room.", n, showEncounte
 isGameEnd :: Room -> Bool
 isGameEnd = null . exits
 
-canFlee :: Room -> Bool
-canFlee (flee -> Just _) = True
-canFlee _                = False
-
 showEncounter :: [Creature] -> String
 showEncounter [] = "It's peaceful."
 showEncounter ms = unlines $ "Enemy's ahead!":map showCreature ms
 
 showTreasure :: [Item] -> String
 showTreasure [] = "There is nothing of intereset."
-showTreasure is = unlines $ "You some items in the light of your torch.":map showItem is
+showTreasure is = unlines $ "You see some items in the light of your torch:":map showItem is
 
 showExits :: [RoomExit] -> String
 showExits [] = "It's the end of your journey."

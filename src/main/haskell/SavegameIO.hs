@@ -1,7 +1,6 @@
 module SavegameIO where
 
-import           Creatures              (Player, goblin, mkPlayer,
-                                         woodenDoor)
+import           Creatures              (Player, goblin, mkPlayer, woodenDoor)
 import           Dungeon                (Dungeon, DungeonState, entry)
 import           Items                  (smallPotion, sword)
 import           Presentation           (prompt)
@@ -10,10 +9,10 @@ import           Rooms                  (Direction (..), RoomExit (..),
                                          mkTreasure)
 
 import           Control.Exception.Base (IOException, bracket, try)
-import           Control.Monad          (liftM)
+import           Control.Monad          (liftM, when)
 import           System.Directory       (doesFileExist, getPermissions,
-                                         readable)
-import           System.IO              (IOMode (..), hClose, hPrint, hGetLine,
+                                         readable, removeFile)
+import           System.IO              (IOMode (..), hClose, hGetLine, hPrint,
                                          openFile)
 import           Text.Read              (readEither)
 
@@ -30,7 +29,7 @@ defaultLevel = [room0, room1, room2, room3, room4] where
     room2 = mkTreasure [sword, smallPotion] [Exit South 1]
     room3 = mkEncounter [woodenDoor "Eastern"] [Exit North 1, Exit East 4] (Just $ Exit North 1)
     room4 = mkNarrativeChamber
-                "You found the tomb of the Demo Demon, but it's empty.\
+                "You found the tomb of the Demo Demon, but it's empty. \
                 \You go back to your home village and to your daily life." []
 
 saveGameName :: FilePath
@@ -75,3 +74,8 @@ newAdventure :: IO GameStatus
 newAdventure = do
     name <- prompt "How do they call you, friend?" "Enter your name"
     return $ NewGame (mkPlayer name, entry defaultLevel)
+
+removeSavedAdventure :: IO ()
+removeSavedAdventure = do
+    exists <- saveGameExists
+    when exists (removeFile saveGameName)

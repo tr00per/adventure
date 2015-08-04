@@ -3,14 +3,16 @@ module Parser where
 import           Common     (NamedObject (..))
 import           Creatures  (Creature)
 import           Items      (Item)
-import           Rooms      (Room (..), RoomExit, canFlee)
+import           Rooms      (Room (..), RoomExit)
 
 import           Data.List  (find)
 import           Data.Maybe (catMaybes, fromJust)
 
+type LegalOptions = [String]
+
 data Decision = Unknown | Save | Go RoomExit | Attack Creature | Get Item
 
-legalOptions :: Room -> [String]
+legalOptions :: Room -> LegalOptions
 legalOptions (Room _ ms is es fl) =
     catMaybes [allow "attack" ms, allow "get" is, allowGo es ms, allowFlee fl ms] ++ defaults
     where
@@ -28,10 +30,7 @@ legalOptions (Room _ ms is es fl) =
         allowFlee (Just _) _  = Just "flee"
         allowFlee _        _  = Nothing
 
-printOptions :: [String] -> IO ()
-printOptions options = putStrLn $ unlines $ "Available actions:":options
-
-parseDecision :: [String] -> String -> Room -> Decision
+parseDecision :: LegalOptions -> String -> Room -> Decision
 parseDecision _     ""  _     = Unknown
 parseDecision legal cmd room
     | command `notElem` legal = Unknown
@@ -39,7 +38,7 @@ parseDecision legal cmd room
     | command == "go"         = tryAction Go target (exits room)
     | command == "attack"     = tryAction Attack target (monsters room)
     | command == "get"        = tryAction Get target (items room)
-    | command == "flee" && canFlee room = Go (fromJust $ flee room)
+    | command == "flee"       = Go (fromJust $ flee room)
     | otherwise               = Unknown
     where tokens  = words cmd
           command = head tokens

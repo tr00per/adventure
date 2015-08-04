@@ -56,7 +56,8 @@ attacker `attack` defender = do
     return (reduceHealth defender damage)
 
 reduceHealth :: Creature -> Int -> Creature
-reduceHealth creature damage = creature { health = max 0 (health creature - damage) }
+reduceHealth creature damage = creature { health = newHealth }
+    where newHealth = max 0 (health creature - damage)
 
 class PlayerUpgrade u where
     upgradePlayer :: Player -> u -> Player

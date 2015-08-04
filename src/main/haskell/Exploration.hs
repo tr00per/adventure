@@ -1,12 +1,11 @@
-{-# LANGUAGE ViewPatterns #-}
 module Exploration where
 
 import           Creatures            (BattleResult (..), Player, battle,
                                        showPlayer, upgradePlayer)
 import           Dungeon              (DungeonState, currentRoom, dungeon,
                                        follow, updateCurrent)
-import           Parser               (Decision (..), legalOptions,
-                                       parseDecision, printOptions)
+import           Parser               (Decision (..), LegalOptions,
+                                       legalOptions, parseDecision)
 import           Presentation         (prompt)
 import           Rooms                (Room (..), isGameEnd, showRoom,
                                        showRoomExit)
@@ -28,6 +27,9 @@ explore player dstate = do
     if isGameEnd current
         then return Victory
         else interaction player dstate
+
+printOptions :: LegalOptions -> IO ()
+printOptions options = putStrLn $ unlines $ "Available actions:":options
 
 interaction :: Player -> DungeonState -> IO GameResult
 interaction player dstate = do

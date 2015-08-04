@@ -4,10 +4,11 @@ import           System.IO (hFlush, stdout)
 
 banner :: String -> IO ()
 banner msg = do
-    putStrLn $ replicate len '-'
+    putStrLn line
     putStrLn $ " " ++ msg
-    putStrLn $ replicate len '-'
-    where len = length msg + 2
+    putStrLn line
+    where len  = length msg + 2
+          line = replicate len '-'
 
 prompt :: String -> String -> IO String
 prompt msg status = do
