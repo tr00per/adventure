@@ -30,7 +30,7 @@ endGame :: GameResult -> IO ()
 endGame (SaveGame (p, ds)) = do savedGame <- saveAdventure p ds
                                 case savedGame of
                                     GameError msg -> putStrLn $ "Error while saving the game: " ++ msg
-                                    GameSaved     -> return ()
+                                    GameSaved     -> putStrLn "Game saved"
                                     _             -> error "Wrong game status"
 endGame result = do removeSavedAdventure
                     gameover (show result)
