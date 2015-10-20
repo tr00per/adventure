@@ -14,7 +14,7 @@ Executable ${project.artifactId}
     Main-Is: Main.hs
     GHC-Options: -Wall -Werror
     HS-Source-Dirs: ${project.build.sourceDirectory}
-    Build-Depends: base, mtl, directory
+    Build-Depends: base, directory, lens, mtl
 
 Source-Repository head
     Type: git

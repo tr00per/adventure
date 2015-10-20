@@ -1,10 +1,13 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE Rank2Types                 #-}
+{-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE ViewPatterns               #-}
 module Creatures where
 
 import           Common               (Name, NamedObject (..))
 import           Items                (Item (..), ItemType (..))
 
+import           Control.Lens ((.~), (^.), Lens', makeLensesFor)
 import           Control.Monad.Writer (Writer, tell)
 
 data Creature = Creature {
@@ -13,6 +16,8 @@ data Creature = Creature {
     armor        :: Int,
     health       :: Int
 } deriving (Eq, Show, Read)
+
+$(makeLensesFor [("power", "upgradePower"), ("armor", "upgradeArmor"), ("health", "upgradeHealth")] ''Creature)
 
 data BattleResult = CreatureWon | Draw | PlayerWon | NoEffect deriving (Eq)
 
@@ -60,15 +65,16 @@ reduceHealth creature damage = creature { health = newHealth }
     where newHealth = max 0 (health creature - damage)
 
 class PlayerUpgrade u where
-    upgradePlayer :: Player -> u -> Player
+    upgradePlayer :: u -> Player -> Player
 
 instance PlayerUpgrade Item where
-    upgradePlayer player@(toCreature -> pc) (Item _ (Weapon newValue)) =
-        if power pc < newValue then Player (pc { power = newValue }) else player
-    upgradePlayer player@(toCreature -> pc) (Item _ (Armor newValue))  =
-        if armor pc < newValue then Player (pc { armor = newValue }) else player
-    upgradePlayer player@(toCreature -> pc) (Item _ (Potion newValue)) =
-        if health pc < newValue then Player (pc { health = newValue }) else player
+    upgradePlayer (Item _ (Weapon newValue)) = upgradeIfBetter upgradePower newValue
+    upgradePlayer (Item _ (Armor newValue))  = upgradeIfBetter upgradeArmor newValue
+    upgradePlayer (Item _ (Potion newValue)) = upgradeIfBetter upgradeHealth newValue
+
+upgradeIfBetter :: Lens' Creature Int -> Int -> Player -> Player
+upgradeIfBetter field newValue player@(toCreature -> pc) =
+    if pc ^. field < newValue then Player (field .~ newValue $ pc) else player
 
 goblin :: Creature
 goblin = Creature "Goblin" 1 0 3

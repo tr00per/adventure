@@ -52,7 +52,7 @@ decide player (Go target)     dstate = do
     explore player (follow target $ dungeon dstate)
 decide player (Get target)    dstate = do
     let current   = currentRoom dstate
-        newPlayer = upgradePlayer player target
+        newPlayer = upgradePlayer target player
         is'       = delete target (items current)
         newRoom   = current { items = is' }
     explore newPlayer (updateCurrent newRoom dstate)
