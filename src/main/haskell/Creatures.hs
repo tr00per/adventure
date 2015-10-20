@@ -7,7 +7,7 @@ module Creatures where
 import           Common               (Name, NamedObject (..))
 import           Items                (Item (..), ItemType (..))
 
-import           Control.Lens ((.~), (^.), Lens', makeLensesFor)
+import           Control.Lens         (Lens', makeLensesFor, (.~), (^.))
 import           Control.Monad.Writer (Writer, tell)
 
 data Creature = Creature {
