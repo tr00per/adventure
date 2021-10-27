@@ -1,0 +1,22 @@
+Name: Adventure
+Synopsis: Adventure for fun and profit
+Description: Fun is in creating something to play with. Profit is in
+             learning.
+Copyright: Artur Czajka <arturczajka@gmail.com>
+Version: 1.0
+Category: Game
+License: BSD2
+License-File: LICENSE
+Cabal-Version: >= 1.6
+Build-Type: Simple
+
+Executable adventure
+    Main-Is: Main.hs
+    GHC-Options: -Wall -Werror
+    HS-Source-Dirs: /home/arturcza/projects/haskell/adventure/src/main/haskell
+    Build-Depends: base, directory, lens, mtl
+    Other-Modules: Common, Creatures, Dungeon, Exploration, Items, Parser, Presentation, Rooms, SavegameIO
+
+Source-Repository head
+    Type: git
+    Location: https://github.com/tr00per/adventure.git
