@@ -5,6 +5,7 @@ import           Creatures  (Creature)
 import           Items      (Item)
 import           Rooms      (Room (..), RoomExit)
 
+import           Data.Char  (toLower)
 import           Data.List  (find)
 import           Data.Maybe (catMaybes, fromJust)
 
@@ -45,4 +46,6 @@ parseDecision legal cmd room
           target  = unwords (tail tokens)
 
 tryAction :: NamedObject a => (a -> Decision) -> String -> [a] -> Decision
-tryAction f target xs = maybe Unknown f $ find ((== target) . getName) xs
+tryAction f target xs = maybe Unknown f $ find ((== lowTarget) . lower . getName) xs
+    where lowTarget = lower target
+          lower = map toLower
