@@ -3,3 +3,4 @@ target/
 /project.cabal
 .stack-work/
 savegame.txt
+.vscode/
